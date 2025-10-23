@@ -1,0 +1,24 @@
+{
+  "name": "expense-tracker",
+  "version": "1.0.0",
+  "description": "A comprehensive expense tracking application with full test coverage",
+  "type": "module",
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "test:ui": "vitest --ui"
+  },
+  "keywords": [
+    "expense",
+    "tracker",
+    "finance"
+  ],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "@vitest/ui": "^1.2.0",
+    "happy-dom": "^12.10.3",
+    "vitest": "^1.2.0"
+  }
+}
