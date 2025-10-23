@@ -430,6 +430,112 @@
         .bg-red { background-color: #fecaca; color: #991b1b; }
         .bg-gray { background-color: #e5e7eb; color: #374151; }
 
+        .trend-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .trend-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .trend-label {
+            font-size: 1rem;
+            opacity: 0.9;
+        }
+
+        .trend-change {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            background-color: rgba(255, 255, 255, 0.2);
+            font-size: 0.875rem;
+            margin-top: 0.5rem;
+        }
+
+        .insight-card {
+            border-left: 4px solid #667eea;
+            padding: 1rem;
+            background-color: #f9fafb;
+            border-radius: 6px;
+            margin-bottom: 1rem;
+        }
+
+        .insight-title {
+            font-weight: 600;
+            color: #111827;
+            margin-bottom: 0.5rem;
+        }
+
+        .insight-text {
+            color: #6b7280;
+            font-size: 0.875rem;
+        }
+
+        .timeline {
+            position: relative;
+            padding-left: 2rem;
+        }
+
+        .timeline-item {
+            position: relative;
+            padding-bottom: 2rem;
+        }
+
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -2rem;
+            top: 0;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background-color: #667eea;
+            border: 3px solid white;
+            box-shadow: 0 0 0 2px #667eea;
+        }
+
+        .timeline-item::after {
+            content: '';
+            position: absolute;
+            left: -1.6875rem;
+            top: 12px;
+            width: 2px;
+            height: calc(100% - 12px);
+            background-color: #e5e7eb;
+        }
+
+        .timeline-item:last-child::after {
+            display: none;
+        }
+
+        .timeline-month {
+            font-weight: 600;
+            color: #111827;
+            margin-bottom: 0.5rem;
+        }
+
+        .timeline-amount {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #667eea;
+        }
+
+        .comparison-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.75rem;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
         footer {
             background-color: white;
             border-top: 1px solid #e5e7eb;
@@ -461,6 +567,7 @@
         <div class="nav-content">
             <button class="nav-button active" onclick="switchTab('dashboard')" id="nav-dashboard">Dashboard</button>
             <button class="nav-button" onclick="switchTab('expenses')" id="nav-expenses">Expenses</button>
+            <button class="nav-button" onclick="switchTab('analytics')" id="nav-analytics">Analytics</button>
         </div>
     </nav>
 
@@ -553,6 +660,58 @@
                             <!-- Expense items will be inserted here -->
                         </div>
                     </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Analytics Tab -->
+        <div id="analytics-tab" class="hidden">
+            <div class="section-title">Analytics & Insights</div>
+            <p class="section-subtitle">Detailed analysis of your spending patterns</p>
+
+            <!-- Spending Trends -->
+            <div class="grid grid-2">
+                <div class="trend-card">
+                    <div class="trend-label">Monthly Average</div>
+                    <div class="trend-value" id="monthly-average">$0.00</div>
+                    <div class="trend-change" id="trend-change">
+                        <span>📈</span>
+                        <span>vs last month</span>
+                    </div>
+                </div>
+
+                <div class="trend-card" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%);">
+                    <div class="trend-label">Daily Average</div>
+                    <div class="trend-value" id="daily-average">$0.00</div>
+                    <div class="trend-change">
+                        <span>💰</span>
+                        <span>This month</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Insights -->
+            <div class="card" style="margin-top: 1.5rem;">
+                <h2 class="section-title">Smart Insights</h2>
+                <div id="insights-container">
+                    <!-- Insights will be inserted here -->
+                </div>
+            </div>
+
+            <!-- Monthly Timeline -->
+            <div class="card" style="margin-top: 1.5rem;">
+                <h2 class="section-title">Spending Timeline</h2>
+                <div class="timeline" id="spending-timeline">
+                    <!-- Timeline will be inserted here -->
+                </div>
+            </div>
+
+            <!-- Category Comparison -->
+            <div class="card" style="margin-top: 1.5rem;">
+                <h2 class="section-title">Category Comparison</h2>
+                <p style="color: #6b7280; margin-bottom: 1rem;">Compare spending across categories</p>
+                <div id="category-comparison">
+                    <!-- Comparison will be inserted here -->
                 </div>
             </div>
         </div>
@@ -663,21 +822,34 @@
         function switchTab(tab) {
             const dashboardTab = document.getElementById('dashboard-tab');
             const expensesTab = document.getElementById('expenses-tab');
+            const analyticsTab = document.getElementById('analytics-tab');
             const navDashboard = document.getElementById('nav-dashboard');
             const navExpenses = document.getElementById('nav-expenses');
+            const navAnalytics = document.getElementById('nav-analytics');
 
+            // Hide all tabs
+            dashboardTab.classList.add('hidden');
+            expensesTab.classList.add('hidden');
+            analyticsTab.classList.add('hidden');
+
+            // Remove active from all nav buttons
+            navDashboard.classList.remove('active');
+            navExpenses.classList.remove('active');
+            navAnalytics.classList.remove('active');
+
+            // Show selected tab
             if (tab === 'dashboard') {
                 dashboardTab.classList.remove('hidden');
-                expensesTab.classList.add('hidden');
                 navDashboard.classList.add('active');
-                navExpenses.classList.remove('active');
                 renderDashboard();
-            } else {
-                dashboardTab.classList.add('hidden');
+            } else if (tab === 'expenses') {
                 expensesTab.classList.remove('hidden');
-                navDashboard.classList.remove('active');
                 navExpenses.classList.add('active');
                 renderExpenseList();
+            } else if (tab === 'analytics') {
+                analyticsTab.classList.remove('hidden');
+                navAnalytics.classList.add('active');
+                renderAnalytics();
             }
         }
 
@@ -912,6 +1084,216 @@
             saveExpenses();
             renderExpenseList();
             renderDashboard();
+        }
+
+        // Analytics Functions
+        function renderAnalytics() {
+            if (expenses.length === 0) {
+                document.getElementById('insights-container').innerHTML = '<p style="color: #6b7280;">No expenses yet. Add some expenses to see analytics!</p>';
+                document.getElementById('spending-timeline').innerHTML = '<p style="color: #6b7280;">No data available</p>';
+                document.getElementById('category-comparison').innerHTML = '<p style="color: #6b7280;">No data available</p>';
+                return;
+            }
+
+            renderTrendCards();
+            renderInsights();
+            renderSpendingTimeline();
+            renderCategoryComparison();
+        }
+
+        function renderTrendCards() {
+            const now = new Date();
+            const currentMonth = now.getMonth();
+            const currentYear = now.getFullYear();
+
+            // Get current month expenses
+            const currentMonthExpenses = expenses.filter(exp => {
+                const expDate = new Date(exp.date);
+                return expDate.getMonth() === currentMonth && expDate.getFullYear() === currentYear;
+            });
+
+            // Get last month expenses
+            const lastMonth = currentMonth === 0 ? 11 : currentMonth - 1;
+            const lastMonthYear = currentMonth === 0 ? currentYear - 1 : currentYear;
+            const lastMonthExpenses = expenses.filter(exp => {
+                const expDate = new Date(exp.date);
+                return expDate.getMonth() === lastMonth && expDate.getFullYear() === lastMonthYear;
+            });
+
+            const currentMonthTotal = currentMonthExpenses.reduce((sum, exp) => sum + exp.amount, 0);
+            const lastMonthTotal = lastMonthExpenses.reduce((sum, exp) => sum + exp.amount, 0);
+
+            // Calculate monthly average
+            const monthlyGroups = {};
+            expenses.forEach(exp => {
+                const date = new Date(exp.date);
+                const key = `${date.getFullYear()}-${date.getMonth()}`;
+                monthlyGroups[key] = (monthlyGroups[key] || 0) + exp.amount;
+            });
+
+            const monthlyAverage = Object.values(monthlyGroups).reduce((sum, val) => sum + val, 0) / Object.keys(monthlyGroups).length;
+
+            // Calculate daily average for current month
+            const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+            const dailyAverage = currentMonthTotal / daysInMonth;
+
+            // Update UI
+            document.getElementById('monthly-average').textContent = formatCurrency(monthlyAverage);
+            document.getElementById('daily-average').textContent = formatCurrency(dailyAverage);
+
+            // Calculate trend
+            const percentChange = lastMonthTotal > 0 ? ((currentMonthTotal - lastMonthTotal) / lastMonthTotal * 100) : 0;
+            const trendElement = document.getElementById('trend-change');
+            if (percentChange > 0) {
+                trendElement.innerHTML = `<span>📈</span><span>+${percentChange.toFixed(1)}% vs last month</span>`;
+            } else if (percentChange < 0) {
+                trendElement.innerHTML = `<span>📉</span><span>${percentChange.toFixed(1)}% vs last month</span>`;
+            } else {
+                trendElement.innerHTML = `<span>➡️</span><span>Same as last month</span>`;
+            }
+        }
+
+        function renderInsights() {
+            const insights = generateInsights();
+            const container = document.getElementById('insights-container');
+
+            if (insights.length === 0) {
+                container.innerHTML = '<p style="color: #6b7280;">No insights available yet</p>';
+                return;
+            }
+
+            container.innerHTML = insights.map(insight => `
+                <div class="insight-card">
+                    <div class="insight-title">${insight.icon} ${insight.title}</div>
+                    <div class="insight-text">${insight.text}</div>
+                </div>
+            `).join('');
+        }
+
+        function generateInsights() {
+            const insights = [];
+            const stats = calculateStats();
+
+            // Top spending category insight
+            if (stats.expenseCount > 0) {
+                const topCategoryAmount = stats.categoryBreakdown[stats.topCategory];
+                const topCategoryPercent = (topCategoryAmount / stats.totalSpending * 100).toFixed(1);
+                insights.push({
+                    icon: categoryIcons[stats.topCategory],
+                    title: 'Top Spending Category',
+                    text: `You spend the most on ${stats.topCategory}, which accounts for ${topCategoryPercent}% of your total expenses (${formatCurrency(topCategoryAmount)}).`
+                });
+            }
+
+            // Recent spending pattern
+            const recentExpenses = expenses.slice(-10);
+            if (recentExpenses.length > 0) {
+                const avgRecentAmount = recentExpenses.reduce((sum, exp) => sum + exp.amount, 0) / recentExpenses.length;
+                insights.push({
+                    icon: '💡',
+                    title: 'Recent Activity',
+                    text: `Your last 10 expenses averaged ${formatCurrency(avgRecentAmount)} per transaction.`
+                });
+            }
+
+            // Monthly comparison
+            const now = new Date();
+            const currentMonth = now.getMonth();
+            const currentYear = now.getFullYear();
+            const currentMonthExpenses = expenses.filter(exp => {
+                const expDate = new Date(exp.date);
+                return expDate.getMonth() === currentMonth && expDate.getFullYear() === currentYear;
+            });
+
+            if (currentMonthExpenses.length > 0) {
+                const avgPerDay = stats.monthlySpending / now.getDate();
+                const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+                const projectedMonthly = avgPerDay * daysInMonth;
+
+                insights.push({
+                    icon: '📊',
+                    title: 'Monthly Projection',
+                    text: `Based on current spending, you're projected to spend ${formatCurrency(projectedMonthly)} this month.`
+                });
+            }
+
+            return insights;
+        }
+
+        function renderSpendingTimeline() {
+            const monthlyData = {};
+
+            expenses.forEach(exp => {
+                const date = new Date(exp.date);
+                const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+                const monthName = date.toLocaleString('default', { month: 'long', year: 'numeric' });
+
+                if (!monthlyData[monthKey]) {
+                    monthlyData[monthKey] = {
+                        name: monthName,
+                        total: 0,
+                        count: 0
+                    };
+                }
+
+                monthlyData[monthKey].total += exp.amount;
+                monthlyData[monthKey].count++;
+            });
+
+            const sortedMonths = Object.entries(monthlyData)
+                .sort((a, b) => b[0].localeCompare(a[0]))
+                .slice(0, 6);
+
+            const timelineHTML = sortedMonths.map(([key, data]) => `
+                <div class="timeline-item">
+                    <div class="timeline-month">${data.name}</div>
+                    <div class="timeline-amount">${formatCurrency(data.total)}</div>
+                    <div style="color: #6b7280; font-size: 0.875rem; margin-top: 0.25rem;">
+                        ${data.count} expense${data.count !== 1 ? 's' : ''}
+                    </div>
+                </div>
+            `).join('');
+
+            document.getElementById('spending-timeline').innerHTML = timelineHTML || '<p style="color: #6b7280;">No timeline data available</p>';
+        }
+
+        function renderCategoryComparison() {
+            const stats = calculateStats();
+            const categories = Object.entries(stats.categoryBreakdown)
+                .filter(([_, amount]) => amount > 0)
+                .sort((a, b) => b[1] - a[1]);
+
+            if (categories.length === 0) {
+                document.getElementById('category-comparison').innerHTML = '<p style="color: #6b7280;">No category data available</p>';
+                return;
+            }
+
+            const maxAmount = categories[0][1];
+
+            const comparisonHTML = categories.map(([category, amount]) => {
+                const percentage = (amount / stats.totalSpending * 100).toFixed(1);
+                const barWidth = (amount / maxAmount * 100).toFixed(1);
+
+                return `
+                    <div class="comparison-row">
+                        <div style="flex: 1;">
+                            <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+                                <span style="font-size: 1.25rem;">${categoryIcons[category]}</span>
+                                <span style="font-weight: 500;">${category}</span>
+                            </div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: ${barWidth}%"></div>
+                            </div>
+                        </div>
+                        <div style="text-align: right; margin-left: 1rem; min-width: 120px;">
+                            <div style="font-weight: 700; color: #111827;">${formatCurrency(amount)}</div>
+                            <div style="font-size: 0.875rem; color: #6b7280;">${percentage}%</div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            document.getElementById('category-comparison').innerHTML = comparisonHTML;
         }
 
         // Export to CSV
