@@ -361,6 +361,92 @@
             display: none !important;
         }
 
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background-color: white;
+            border-radius: 12px;
+            padding: 2rem;
+            max-width: 500px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1.5rem;
+        }
+
+        .modal-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        .btn-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 0.25rem;
+            color: #6b7280;
+        }
+
+        .btn-close:hover {
+            color: #111827;
+        }
+
+        .export-options {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .export-format-btn {
+            padding: 1rem;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            background: white;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: center;
+        }
+
+        .export-format-btn:hover {
+            border-color: #667eea;
+            background-color: #f9fafb;
+        }
+
+        .export-format-btn.selected {
+            border-color: #667eea;
+            background-color: #eef2ff;
+        }
+
+        .format-icon {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .format-label {
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: #374151;
+        }
+
         .chart-container {
             position: relative;
             height: 300px;
@@ -453,7 +539,7 @@
                 <div class="logo">💰</div>
                 <h1>Expense Tracker</h1>
             </div>
-            <button class="btn btn-export" onclick="exportToCSV()">📥 Export CSV</button>
+            <button class="btn btn-export" onclick="openExportModal()">📥 Export Data</button>
         </div>
     </header>
 
@@ -563,6 +649,59 @@
             Built with HTML, CSS, and JavaScript
         </div>
     </footer>
+
+    <!-- Export Modal -->
+    <div id="export-modal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Export Data</h2>
+                <button class="btn-close" onclick="closeExportModal()">×</button>
+            </div>
+
+            <div class="form-group">
+                <label>Export Format</label>
+                <div class="export-options">
+                    <button class="export-format-btn selected" onclick="selectFormat('csv')" data-format="csv">
+                        <div class="format-icon">📄</div>
+                        <div class="format-label">CSV</div>
+                    </button>
+                    <button class="export-format-btn" onclick="selectFormat('json')" data-format="json">
+                        <div class="format-icon">📋</div>
+                        <div class="format-label">JSON</div>
+                    </button>
+                    <button class="export-format-btn" onclick="selectFormat('excel')" data-format="excel">
+                        <div class="format-icon">📊</div>
+                        <div class="format-label">Excel</div>
+                    </button>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="export-start-date">Start Date</label>
+                <input type="date" id="export-start-date">
+            </div>
+
+            <div class="form-group">
+                <label for="export-end-date">End Date</label>
+                <input type="date" id="export-end-date">
+            </div>
+
+            <div class="form-group">
+                <label for="export-category">Filter by Category</label>
+                <select id="export-category">
+                    <option value="All">All Categories</option>
+                    <option value="Food">🍔 Food</option>
+                    <option value="Transportation">🚗 Transportation</option>
+                    <option value="Entertainment">🎬 Entertainment</option>
+                    <option value="Shopping">🛍️ Shopping</option>
+                    <option value="Bills">📄 Bills</option>
+                    <option value="Other">📦 Other</option>
+                </select>
+            </div>
+
+            <button class="btn btn-primary" onclick="performExport()">Export</button>
+        </div>
+    </div>
 
     <script>
         // Data storage
@@ -914,15 +1053,78 @@
             renderDashboard();
         }
 
-        // Export to CSV
-        function exportToCSV() {
+        // Export Modal Management
+        let selectedExportFormat = 'csv';
+
+        function openExportModal() {
             if (expenses.length === 0) {
                 alert('No expenses to export!');
                 return;
             }
+            document.getElementById('export-modal').classList.remove('hidden');
 
+            // Set default date range to all time
+            if (expenses.length > 0) {
+                const dates = expenses.map(e => new Date(e.date));
+                const minDate = new Date(Math.min(...dates));
+                const maxDate = new Date(Math.max(...dates));
+
+                document.getElementById('export-start-date').value = minDate.toISOString().split('T')[0];
+                document.getElementById('export-end-date').value = maxDate.toISOString().split('T')[0];
+            }
+        }
+
+        function closeExportModal() {
+            document.getElementById('export-modal').classList.add('hidden');
+        }
+
+        function selectFormat(format) {
+            selectedExportFormat = format;
+            document.querySelectorAll('.export-format-btn').forEach(btn => {
+                btn.classList.remove('selected');
+            });
+            document.querySelector(`[data-format="${format}"]`).classList.add('selected');
+        }
+
+        function getFilteredExportData() {
+            const startDate = document.getElementById('export-start-date').value;
+            const endDate = document.getElementById('export-end-date').value;
+            const category = document.getElementById('export-category').value;
+
+            return expenses.filter(exp => {
+                const expDate = exp.date;
+                const matchesDateRange = (!startDate || expDate >= startDate) && (!endDate || expDate <= endDate);
+                const matchesCategory = category === 'All' || exp.category === category;
+                return matchesDateRange && matchesCategory;
+            });
+        }
+
+        function performExport() {
+            const filteredData = getFilteredExportData();
+
+            if (filteredData.length === 0) {
+                alert('No expenses match the selected filters!');
+                return;
+            }
+
+            switch(selectedExportFormat) {
+                case 'csv':
+                    exportToCSV(filteredData);
+                    break;
+                case 'json':
+                    exportToJSON(filteredData);
+                    break;
+                case 'excel':
+                    exportToExcel(filteredData);
+                    break;
+            }
+
+            closeExportModal();
+        }
+
+        function exportToCSV(data) {
             const headers = ['Date', 'Category', 'Description', 'Amount'];
-            const rows = expenses.map(exp => [
+            const rows = data.map(exp => [
                 formatDate(exp.date),
                 exp.category,
                 exp.description,
@@ -934,17 +1136,59 @@
                 ...rows.map(row => row.map(cell => `"${cell}"`).join(','))
             ].join('\n');
 
-            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            downloadFile(csvContent, `expenses-${new Date().toISOString().split('T')[0]}.csv`, 'text/csv');
+        }
+
+        function exportToJSON(data) {
+            const exportData = {
+                exportDate: new Date().toISOString(),
+                totalExpenses: data.length,
+                totalAmount: data.reduce((sum, exp) => sum + exp.amount, 0),
+                expenses: data.map(exp => ({
+                    date: exp.date,
+                    category: exp.category,
+                    description: exp.description,
+                    amount: exp.amount
+                }))
+            };
+
+            const jsonContent = JSON.stringify(exportData, null, 2);
+            downloadFile(jsonContent, `expenses-${new Date().toISOString().split('T')[0]}.json`, 'application/json');
+        }
+
+        function exportToExcel(data) {
+            // Excel-compatible CSV with BOM for proper encoding
+            const headers = ['Date', 'Category', 'Description', 'Amount'];
+            const rows = data.map(exp => [
+                formatDate(exp.date),
+                exp.category,
+                exp.description,
+                exp.amount.toFixed(2)
+            ]);
+
+            const csvContent = [
+                headers.join(','),
+                ...rows.map(row => row.map(cell => `"${cell}"`).join(','))
+            ].join('\n');
+
+            // Add BOM for Excel
+            const BOM = '\uFEFF';
+            downloadFile(BOM + csvContent, `expenses-${new Date().toISOString().split('T')[0]}.csv`, 'text/csv');
+        }
+
+        function downloadFile(content, filename, mimeType) {
+            const blob = new Blob([content], { type: `${mimeType};charset=utf-8;` });
             const link = document.createElement('a');
             const url = URL.createObjectURL(blob);
 
             link.setAttribute('href', url);
-            link.setAttribute('download', `expenses-${new Date().toISOString().split('T')[0]}.csv`);
+            link.setAttribute('download', filename);
             link.style.visibility = 'hidden';
 
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
+            URL.revokeObjectURL(url);
         }
 
         // Initialize app
