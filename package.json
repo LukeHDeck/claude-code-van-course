@@ -1,0 +1,22 @@
+{
+  "name": "expense-tracker-cli",
+  "version": "1.0.0",
+  "description": "Command-line interface for the expense tracker application",
+  "main": "cli.js",
+  "bin": {
+    "expense": "./cli.js"
+  },
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "expense",
+    "tracker",
+    "cli",
+    "finance"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {}
+}
